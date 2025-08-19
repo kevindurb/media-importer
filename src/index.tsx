@@ -1,10 +1,10 @@
 import bun from 'bun'
-import * as IndexController from './controllers/IndexController';
+import * as indexController from './controllers/index-controller';
 
 bun.serve({
   port: process.env.PORT,
   routes: {
     '/health': new Response('OK'),
-    '/': IndexController.index,
+    '/': indexController.index,
   }
 })
