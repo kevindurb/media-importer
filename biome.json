@@ -19,7 +19,13 @@
     "lineEnding": "lf",
     "attributePosition": "auto"
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -30,7 +36,8 @@
         "useHookAtTopLevel": "error",
         "noGlobalObjectCalls": "error",
         "noConstAssign": "error",
-        "useValidTypeof": "error"
+        "useValidTypeof": "error",
+        "useParseIntRadix": "off"
       },
       "style": {
         "noNegationElse": "error",
@@ -93,7 +100,7 @@
         "noUnsafeNegation": "error",
         "useGetterReturn": "error",
         "noWith": "error",
-        "noConsole": { "level": "warn", "options": { "allow": ["log"] } }
+        "noConsole": "off"
       },
       "nursery": {
         "useSortedClasses": "error"
