@@ -103,7 +103,7 @@
         "noConsole": "off"
       },
       "nursery": {
-        "useSortedClasses": "error"
+        "useSortedClasses": "off"
       }
     }
   },
