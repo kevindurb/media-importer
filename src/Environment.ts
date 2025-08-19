@@ -7,6 +7,10 @@ export class Environment {
     return this.getNumberOrFail('PORT');
   }
 
+  getTMDBApiKey(): string {
+    return this.getStringOrFail('TMDB_API_KEY');
+  }
+
   private getNumberOrFail(key: string): number {
     const value = this.getStringOrFail(key);
     const parsed = Number.parseInt(value);

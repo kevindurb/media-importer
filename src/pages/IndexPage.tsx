@@ -8,18 +8,36 @@ export const IndexPage = () => {
   return (
     <Layout>
       <form method='POST' action='/refresh'>
-        <input type='submit' value='Refresh' class='btn btn-secondary' />
+        <button type='submit' class='btn btn-secondary bi bi-arrow-clockwise' />
       </form>
-      <ul class='list-group'>
-        {importFiles.map((file) => (
-          <li class='list-group-item d-flex justify-content-between align-items-center'>
-            <span safe>{file.path}</span>
-            <span class='badge text-bg-secondary rounded-pill' safe>
-              {file.mimeType}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <table class='table'>
+        <thead>
+          <tr>
+            <th scope='col'>Path</th>
+            <th scope='col'>Type</th>
+            <th scope='col'>Match</th>
+            <th scope='col'></th>
+          </tr>
+        </thead>
+        <tbody>
+          {importFiles.map((file) => (
+            <tr>
+              <td safe>{file.path}</td>
+              <td>
+                <span class='badge text-bg-secondary rounded-pill' safe>
+                  {file.mimeType}
+                </span>
+              </td>
+              <td>
+                <span class='badge text-bg-warning rounded-pill'>No Match Found</span>
+              </td>
+              <td>
+                <button type='submit' class='btn btn-secondary bi bi-save' />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </Layout>
   );
 };

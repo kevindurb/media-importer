@@ -7,6 +7,7 @@ export const Layout: Component = ({ children }) => (
       <head>
         <title>Media Importer</title>
         <link rel='stylesheet' href='/bootstrap.css' />
+        <link rel='stylesheet' href='/bootstrap-icons.css' />
       </head>
       <body>
         <div class='container'>{children}</div>
