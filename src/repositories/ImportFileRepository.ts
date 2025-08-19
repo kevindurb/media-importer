@@ -5,12 +5,14 @@ export class ImportFileRepository {
   init() {
     database
       .query(
-        `CREATE TABLE IF NOT EXISTS import_files (
-      id TEXT PRIMARY KEY NOT NULL,
-      path TEXT NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )`,
+        `
+        CREATE TABLE IF NOT EXISTS import_files (
+          id TEXT PRIMARY KEY NOT NULL,
+          path TEXT NOT NULL UNIQUE,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+        `,
       )
       .run();
   }
@@ -26,16 +28,13 @@ export class ImportFileRepository {
       .get(id);
   }
 
-  save(importFile: ImportFile) {
+  create(importFile: ImportFile) {
     return database
       .query<ImportFile, { id: string; path: string }>(
-        `insert into import_files (id, path)
-        values(:id, :path)
-        on conflict(id) do update set
-        path = :path`,
+        `insert into import_files (id, path) values (:id, :path) on conflict do nothing`,
       )
       .as(ImportFile)
-      .run(importFile);
+      .run({ id: importFile.id, path: importFile.path });
   }
 
   delete(id: string) {
