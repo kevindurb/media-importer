@@ -1,16 +1,19 @@
 import type { Component } from '@kitajs/html';
 import type * as CSS from 'csstype';
+import { PrismaClient } from '../../generated/prisma';
 import { Layout } from '../layouts/Layout';
-import { ImportFileRepository } from '../repositories/ImportFileRepository';
+import { TMDBMatchService } from '../services/TMDBMatchService';
 import { TMDB } from '../TMDB';
+import { fileName } from '../utils/files';
 
 type Props = {
-  id: string;
+  id: number;
   tmdbQuery?: string;
 };
 
-const importFileRepository = new ImportFileRepository();
 const tmdb = new TMDB();
+const prisma = new PrismaClient();
+const tmdbMatchService = new TMDBMatchService();
 
 const ellipsisOverflowStyle: CSS.Properties = {
   whiteSpace: 'nowrap',
@@ -18,16 +21,16 @@ const ellipsisOverflowStyle: CSS.Properties = {
 };
 
 export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
-  const importFile = importFileRepository.findById(id);
+  const importFile = await prisma.importFile.findUnique({ where: { id } });
   if (!importFile) throw new Error('Not Found');
 
   const tmdbConfig = await tmdb.getConfiguration();
-  const matches = await importFile.getTMDBMatches(tmdbQuery);
+  const matches = await tmdbMatchService.getMatchesForFile(importFile, tmdbQuery);
   console.log(tmdbConfig);
 
   return (
     <Layout>
-      <h1 safe>{importFile.fileName}</h1>
+      <h1 safe>{fileName(importFile)}</h1>
       <form method='GET' action={`/import-files/${importFile.id}/match`}>
         <div class='input-group mb-3'>
           <input required type='text' class='form-control' placeholder='Search' name='tmdbQuery' />

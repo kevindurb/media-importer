@@ -2,14 +2,13 @@ import { renderToStream } from '@kitajs/html/suspense';
 import bun from 'bun';
 import qs from 'qs';
 import z from 'zod';
+import { PrismaClient } from '../generated/prisma';
 import { assets } from './assets';
 import { Environment } from './Environment';
 import { IndexPage } from './pages/IndexPage';
 import { MatchPage } from './pages/MatchPage';
-import { ImportFileRepository } from './repositories/ImportFileRepository';
 
-const importFileRepository = new ImportFileRepository();
-importFileRepository.init();
+const prisma = new PrismaClient();
 
 const env = new Environment();
 
@@ -25,7 +24,7 @@ bun.serve({
     '/': () => new Response(renderToStream(<IndexPage />)),
     '/refresh': {
       POST: async () => {
-        await importFileRepository.loadFromImportsPath();
+        // await importFileRepository.loadFromImportsPath();
         return Response.redirect('/');
       },
     },
@@ -34,14 +33,18 @@ bun.serve({
         new Response(
           renderToStream(
             <MatchPage
-              id={req.params.id}
+              id={Number.parseInt(req.params.id)}
               tmdbQuery={new URL(req.url).searchParams.get('tmdbQuery') ?? undefined}
             />,
           ),
         ),
       POST: async (req) => {
-        const body = UpdateMatchBody.parse(qs.parse(await req.text()));
-        await importFileRepository.updateMatch(req.params.id, body.tmdbMatchId);
+        const id = Number.parseInt(req.params.id);
+        const { tmdbMatchId } = UpdateMatchBody.parse(qs.parse(await req.text()));
+        await prisma.importFile.update({
+          where: { id },
+          data: { tmdbMatchId },
+        });
         return Response.redirect(`/`);
       },
     },

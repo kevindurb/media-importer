@@ -1,10 +1,11 @@
+import { PrismaClient } from '../../generated/prisma';
 import { Layout } from '../layouts/Layout';
-import { ImportFileRepository } from '../repositories/ImportFileRepository';
+import { mimeTypeForFile } from '../utils/files';
 
-const importFileRepository = new ImportFileRepository();
+const prisma = new PrismaClient();
 
-export const IndexPage = () => {
-  const importFiles = importFileRepository.findAll();
+export const IndexPage = async () => {
+  const importFiles = await prisma.importFile.findMany();
   return (
     <Layout>
       <form method='POST' action='/refresh'>
@@ -28,7 +29,7 @@ export const IndexPage = () => {
                   {file.isTVShow ? 'TV Show' : 'Movie'}
                 </span>
                 <span class='badge text-bg-secondary rounded-pill' safe>
-                  {file.mimeType}
+                  {mimeTypeForFile(file)}
                 </span>
               </td>
               <td>
