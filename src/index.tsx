@@ -24,7 +24,7 @@ bun.serve({
     },
     '/import-files/:id/match': {
       GET: (req) => new Response(renderToStream(<MatchPage id={req.params.id} />)),
-      POST: async (req) => {
+      POST: async (_req) => {
         return Response.redirect(`/`);
       },
     },

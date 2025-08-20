@@ -21,7 +21,7 @@ export class ImportFile {
   }
 
   get parentDirectory(): string {
-    return dirname(this.path).split('/').at(-1)!;
+    return dirname(this.path).split('/').at(-1) ?? '';
   }
 
   private get matchQueries(): string[] {
