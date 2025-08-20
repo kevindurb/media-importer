@@ -1,3 +1,4 @@
+import { basename, extname } from 'node:path';
 import mime from 'mime-types';
 
 export class ImportFile {
@@ -9,5 +10,9 @@ export class ImportFile {
 
   get mimeType() {
     return mime.lookup(this.path) || 'application/octet-stream';
+  }
+
+  get fileName() {
+    return basename(this.path, extname(this.path));
   }
 }
