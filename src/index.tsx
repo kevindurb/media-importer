@@ -7,10 +7,11 @@ import { assets } from './assets';
 import { Environment } from './Environment';
 import { IndexPage } from './pages/IndexPage';
 import { MatchPage } from './pages/MatchPage';
+import { LoadImportFilesService } from './services/LoadImportFilesService';
 
 const prisma = new PrismaClient();
-
 const env = new Environment();
+const loadImportFilesService = new LoadImportFilesService();
 
 const UpdateMatchBody = z.object({
   tmdbMatchId: z.string().transform((value) => Number.parseInt(value)),
@@ -24,7 +25,7 @@ bun.serve({
     '/': () => new Response(renderToStream(<IndexPage />)),
     '/refresh': {
       POST: async () => {
-        // await importFileRepository.loadFromImportsPath();
+        await loadImportFilesService.loadFromImportsPath();
         return Response.redirect('/');
       },
     },
