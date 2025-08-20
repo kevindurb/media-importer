@@ -11,6 +11,17 @@ type MovieListObject = {
   title: string;
   overview: string;
   release_date: string;
+  poster_path: string;
+  backdrop_path: string;
+};
+
+type Configuration = {
+  images: {
+    base_url: string;
+    secure_base_url: string;
+    poster_sizes: string[];
+    backdrop_sizes: string[];
+  };
 };
 
 export class TMDB {
@@ -35,8 +46,18 @@ export class TMDB {
     }
   }
 
+  getConfiguration() {
+    return this.fetch<Configuration>(this.buildUrl('/configuration'));
+  }
+
   searchMovie(query: string) {
     const url = this.buildUrl('/search/movie');
+    url.searchParams.set('query', query);
+    return this.fetch<ListResponse<MovieListObject>>(url);
+  }
+
+  searchTV(query: string) {
+    const url = this.buildUrl('/search/tv');
     url.searchParams.set('query', query);
     return this.fetch<ListResponse<MovieListObject>>(url);
   }
