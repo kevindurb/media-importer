@@ -1,5 +1,7 @@
 import { renderToStream } from '@kitajs/html/suspense';
 import bun from 'bun';
+import qs from 'qs';
+import z from 'zod';
 import { assets } from './assets';
 import { Environment } from './Environment';
 import { IndexPage } from './pages/IndexPage';
@@ -10,6 +12,10 @@ const importFileRepository = new ImportFileRepository();
 importFileRepository.init();
 
 const env = new Environment();
+
+const UpdateMatchBody = z.object({
+  tmdbMatchId: z.string().transform((value) => Number.parseInt(value)),
+});
 
 bun.serve({
   port: env.getPort(),
@@ -24,8 +30,18 @@ bun.serve({
       },
     },
     '/import-files/:id/match': {
-      GET: (req) => new Response(renderToStream(<MatchPage id={req.params.id} />)),
-      POST: async (_req) => {
+      GET: (req) =>
+        new Response(
+          renderToStream(
+            <MatchPage
+              id={req.params.id}
+              tmdbQuery={new URL(req.url).searchParams.get('tmdbQuery') ?? undefined}
+            />,
+          ),
+        ),
+      POST: async (req) => {
+        const body = UpdateMatchBody.parse(qs.parse(await req.text()));
+        await importFileRepository.updateMatch(req.params.id, body.tmdbMatchId);
         return Response.redirect(`/`);
       },
     },

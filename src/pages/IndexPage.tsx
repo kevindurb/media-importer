@@ -24,6 +24,9 @@ export const IndexPage = () => {
             <tr>
               <td safe>{file.path}</td>
               <td>
+                <span class='badge text-bg-secondary rounded-pill'>
+                  {file.isTVShow ? 'TV Show' : 'Movie'}
+                </span>
                 <span class='badge text-bg-secondary rounded-pill' safe>
                   {file.mimeType}
                 </span>

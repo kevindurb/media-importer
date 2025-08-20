@@ -6,6 +6,7 @@ import { TMDB } from '../TMDB';
 
 type Props = {
   id: string;
+  tmdbQuery?: string;
 };
 
 const importFileRepository = new ImportFileRepository();
@@ -16,20 +17,28 @@ const ellipsisOverflowStyle: CSS.Properties = {
   textOverflow: 'ellipsis',
 };
 
-export const MatchPage: Component<Props> = async ({ id }) => {
+export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
   const importFile = importFileRepository.findById(id);
   if (!importFile) throw new Error('Not Found');
 
   const tmdbConfig = await tmdb.getConfiguration();
-  const matches = await importFile.getTMDBMatches();
+  const matches = await importFile.getTMDBMatches(tmdbQuery);
+  console.log(tmdbConfig);
 
   return (
     <Layout>
       <h1 safe>{importFile.fileName}</h1>
+      <form method='GET' action={`/import-files/${importFile.id}/match`}>
+        <div class='input-group mb-3'>
+          <input required type='text' class='form-control' placeholder='Search' name='tmdbQuery' />
+          <button class='btn btn-primary bi bi-search' type='submit'></button>
+        </div>
+      </form>
       <form method='POST' action={`/import-files/${importFile.id}/match`}>
         <button type='submit' class='btn btn-primary'>
           Update Match
         </button>
+
         <div class='row'>
           {matches.map((match) => (
             <div class='col-md-4 my-2'>
@@ -38,7 +47,7 @@ export const MatchPage: Component<Props> = async ({ id }) => {
                   <img
                     src={`${tmdbConfig.images.secure_base_url}/w500${match.poster_path}`}
                     class='card-img-top'
-                    alt={match.title}
+                    alt={'title' in match ? match.title : match.name}
                   />
                 </div>
                 <div class='card-img-overlay'>
@@ -47,6 +56,7 @@ export const MatchPage: Component<Props> = async ({ id }) => {
                     type='radio'
                     name='tmdbMatchId'
                     value={match.id.toString()}
+                    checked={match.id === importFile.tmdbMatchId}
                   />
                 </div>
                 <div class='card-body'>
@@ -54,7 +64,7 @@ export const MatchPage: Component<Props> = async ({ id }) => {
                     class='card-title overflow-hidden'
                     style={ellipsisOverflowStyle}
                     safe
-                  >{`${match.id}: ${match.title}`}</h5>
+                  >{`${match.id}: ${'title' in match ? match.title : match.name}`}</h5>
                   <h6 class='card-subtitle mb-2 text-body-secondary' safe>
                     {match.release_date}
                   </h6>

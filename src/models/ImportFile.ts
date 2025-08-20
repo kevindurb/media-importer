@@ -10,6 +10,7 @@ export class ImportFile {
     public id = crypto.randomUUID().toString(),
     public path: string,
     public tmdbMatchId?: number,
+    public isTVShow?: boolean,
   ) {}
 
   get mimeType(): string {
@@ -24,6 +25,30 @@ export class ImportFile {
     return dirname(this.path).split('/').at(-1) ?? '';
   }
 
+  async getTMDBMatches(queryOverride?: string) {
+    if (queryOverride) {
+      return (this.isTVShow ? tmdb.searchTV(queryOverride) : tmdb.searchMovie(queryOverride)).then(
+        (res) => res.results,
+      );
+    }
+
+    return (
+      await Promise.all(
+        this.matchQueries.map((query) =>
+          (this.isTVShow ? tmdb.searchTV(query) : tmdb.searchMovie(query)).then(
+            (res) => res.results,
+          ),
+        ),
+      )
+    ).flat();
+  }
+
+  looksLikeTVShow() {
+    // Does the path have E123 or S123
+    // then we guess it might be a tv show
+    return /[SE]\d+/.test(this.path);
+  }
+
   private get matchQueries(): string[] {
     const cleanFileName = this.cleanForQuery(this.fileName);
     const cleanParent = this.cleanForQuery(this.parentDirectory);
@@ -31,14 +56,6 @@ export class ImportFile {
     console.log(cleanFileName, cleanParent);
 
     return [cleanFileName, cleanParent];
-  }
-
-  async getTMDBMatches() {
-    return (
-      await Promise.all(
-        this.matchQueries.map((query) => tmdb.searchMovie(query).then((res) => res.results)),
-      )
-    ).flat();
   }
 
   private cleanForQuery(value: string): string {

@@ -15,6 +15,15 @@ type MovieListObject = {
   backdrop_path: string;
 };
 
+type TVListObject = {
+  id: number;
+  name: string;
+  overview: string;
+  release_date: string;
+  poster_path: string;
+  backdrop_path: string;
+};
+
 type Configuration = {
   images: {
     base_url: string;
@@ -59,6 +68,6 @@ export class TMDB {
   searchTV(query: string) {
     const url = this.buildUrl('/search/tv');
     url.searchParams.set('query', query);
-    return this.fetch<ListResponse<MovieListObject>>(url);
+    return this.fetch<ListResponse<TVListObject>>(url);
   }
 }
