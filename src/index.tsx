@@ -3,6 +3,7 @@ import bun from 'bun';
 import { refresh } from './commands/refresh';
 import { Environment } from './Environment';
 import { IndexPage } from './pages/IndexPage';
+import { MatchPage } from './pages/MatchPage';
 import { ImportFileRepository } from './repositories/ImportFileRepository';
 
 const importFileRepository = new ImportFileRepository();
@@ -19,6 +20,12 @@ bun.serve({
       POST: async () => {
         await refresh();
         return Response.redirect('/');
+      },
+    },
+    '/import-files/:id/match': {
+      GET: (req) => new Response(renderToStream(<MatchPage id={req.params.id} />)),
+      POST: async (req) => {
+        return Response.redirect(`/`);
       },
     },
     '/bootstrap.css': new Response(

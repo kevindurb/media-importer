@@ -29,7 +29,12 @@ export const IndexPage = () => {
                 </span>
               </td>
               <td>
-                <span class='badge text-bg-warning rounded-pill'>No Match Found</span>
+                <a
+                  href={`/import-files/${file.id}/match`}
+                  class='badge text-bg-warning rounded-pill'
+                >
+                  {file.tmdbMatchId ?? 'No Match Found'}
+                </a>
               </td>
               <td>
                 <button type='submit' class='btn btn-secondary bi bi-save' />
