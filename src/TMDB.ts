@@ -60,12 +60,14 @@ export class TMDB {
   }
 
   searchMovie(query: string) {
+    console.log('SEARCH MOVIE', query);
     const url = this.buildUrl('/search/movie');
     url.searchParams.set('query', query);
     return this.fetch<ListResponse<MovieListObject>>(url);
   }
 
   searchTV(query: string) {
+    console.log('SEARCH TV', query);
     const url = this.buildUrl('/search/tv');
     url.searchParams.set('query', query);
     return this.fetch<ListResponse<TVListObject>>(url);

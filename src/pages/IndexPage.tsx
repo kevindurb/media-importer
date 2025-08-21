@@ -1,7 +1,7 @@
 import type { Component } from '@kitajs/html';
 import { PrismaClient } from '../../generated/prisma';
 import { Layout } from '../layouts/Layout';
-import { mimeTypeForFile } from '../utils/files';
+import { fromImportPath, mimeTypeForFile } from '../utils/files';
 
 const prisma = new PrismaClient();
 
@@ -32,7 +32,7 @@ export const IndexPage: Component<Props> = async ({ query }) => {
       <h1>Media Importer</h1>
       <form method='GET' action='/'>
         <div class='input-group mb-3'>
-          <input required type='text' class='form-control' placeholder='Search' name='query' />
+          <input type='text' class='form-control' placeholder='Search' name='query' value={query} />
           <button class='btn btn-primary bi bi-search' type='submit'></button>
         </div>
       </form>
@@ -52,8 +52,8 @@ export const IndexPage: Component<Props> = async ({ query }) => {
           {importFiles.map((file) => (
             <tr>
               <td>
-                <a href={`/import-files/${file.id}/match`} safe>
-                  {file.path}
+                <a href={`/import-files/${file.id}`} safe>
+                  {fromImportPath(file)}
                 </a>
               </td>
               <td>
@@ -65,15 +65,18 @@ export const IndexPage: Component<Props> = async ({ query }) => {
                 </span>
               </td>
               <td>
-                <a
-                  href={`/import-files/${file.id}/match`}
-                  class='badge text-bg-warning rounded-pill'
+                <span
+                  class={`badge text-bg-${file.tmdbMatchId ? 'success' : 'warning'} rounded-pill`}
                 >
                   {file.tmdbMatchId ?? 'No Match Found'}
-                </a>
+                </span>
               </td>
               <td>
-                <button type='submit' class='btn btn-secondary bi bi-save' />
+                <form method='post' action={`/import-files/${file.id}/import`}>
+                  <button type='submit' class='btn btn-secondary'>
+                    Import
+                  </button>
+                </form>
               </td>
             </tr>
           ))}

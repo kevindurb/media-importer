@@ -1,3 +1,4 @@
+import { match } from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { type ImportFile, PrismaClient } from '../../generated/prisma';
@@ -29,13 +30,21 @@ export class LoadImportFilesService {
             path: fullPath,
           },
         });
-
-        const matches = await tmdbMatchService.getMatchesForFile(importFile);
-        importFile.tmdbMatchId = matches.at(0)?.id ?? null;
+        const id = importFile.id;
 
         if (this.looksLikeTVShow(importFile)) {
+          await prisma.importFile.update({
+            where: { id },
+            data: { isTVShow: true },
+          });
           importFile.isTVShow = true;
         }
+
+        const matches = await tmdbMatchService.getMatchesForFile(importFile);
+        await prisma.importFile.update({
+          where: { id },
+          data: { tmdbMatchId: matches.at(0)?.id ?? null },
+        });
       } catch (error) {
         console.log('Error accessing file', fullPath, error);
       }
