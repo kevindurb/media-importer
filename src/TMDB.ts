@@ -2,11 +2,11 @@ import { Environment } from './Environment';
 
 const env = new Environment();
 
-type ListResponse<Item> = {
+export type ListResponse<Item> = {
   results: Item[];
 };
 
-type MovieListObject = {
+export type MovieListObject = {
   id: number;
   title: string;
   overview: string;
@@ -15,34 +15,36 @@ type MovieListObject = {
   backdrop_path: string;
 };
 
-type MovieObject = MovieListObject & {
+export type MovieObject = MovieListObject & {
   imdb_id: string;
 };
 
-type TVListObject = {
+export type TVListObject = {
   id: number;
   name: string;
   overview: string;
-  release_date: string;
+  first_air_date: string;
   poster_path: string;
   backdrop_path: string;
 };
 
-type TVObject = TVListObject & {
+export type TVObject = TVListObject & {
   number_of_episodes: number;
   number_of_seasons: number;
 };
 
-type TVSeasonObject = {
+export type TVSeasonObject = {
   id: number;
   name: string;
+  season_number: number;
   episodes: {
     id: number;
     name: string;
+    episode_number: number;
   }[];
 };
 
-type Configuration = {
+export type Configuration = {
   images: {
     base_url: string;
     secure_base_url: string;

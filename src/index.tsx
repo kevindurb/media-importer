@@ -8,11 +8,10 @@ import { Environment } from './Environment';
 import { IndexPage } from './pages/IndexPage';
 import { MatchPage } from './pages/MatchPage';
 import { buildFileImportPath, importFile } from './services/ImportFileToLibraryService';
-import { LoadImportFilesService } from './services/LoadImportFilesService';
+import { loadFromImportsPath } from './services/LoadImportFilesService';
 
 const prisma = new PrismaClient();
 const env = new Environment();
-const loadImportFilesService = new LoadImportFilesService();
 
 const optionalParseString = z
   .string()
@@ -28,6 +27,7 @@ const UpdateImportFileBody = z.object({
     .transform((value) => value === '1'),
   season: optionalParseString,
   episode: optionalParseString,
+  part: optionalParseString,
 });
 
 bun.serve({
@@ -43,7 +43,7 @@ bun.serve({
       ),
     '/refresh': {
       POST: async () => {
-        await loadImportFilesService.loadFromImportsPath();
+        await loadFromImportsPath();
         return Response.redirect('/');
       },
     },

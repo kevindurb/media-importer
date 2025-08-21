@@ -19,13 +19,16 @@ export const buildFileImportPath = async (file: ImportFile): Promise<string | un
   if (file.isTVShow) {
     const match = await tmdb.getTVDetails(tmdbMatchId);
     if (!match) return;
-    const releaseDate = new Date(match.release_date);
+    const releaseDate = new Date(match.first_air_date);
+    console.log(match);
     const season = file.season?.toString().padStart(2, '0') ?? '00';
     const episode = file.episode?.toString().padStart(2, '0') ?? '00';
     let episodeName = 'Unnamed';
     if (file.season && file.episode) {
       const seasonDetails = await tmdb.getTVSeasonDetails(tmdbMatchId, file.season);
-      const episodeDetails = seasonDetails?.episodes.find(({ id }) => id === file.episode);
+      const episodeDetails = seasonDetails?.episodes.find(
+        ({ episode_number }) => episode_number === file.episode,
+      );
       if (episodeDetails) {
         episodeName = episodeDetails.name;
       }
@@ -34,7 +37,7 @@ export const buildFileImportPath = async (file: ImportFile): Promise<string | un
       env.getLibraryTVShowsPath(),
       `${match.name} (${releaseDate.getFullYear()})`,
       `Season ${season}`,
-      `${match.name} (${releaseDate.getFullYear()}) S${season}E${episode} ${episodeName} [tmdb=${tmdbMatchId}].${ext}`,
+      `${match.name} (${releaseDate.getFullYear()}) S${season}E${episode} ${episodeName} [tmdb=${tmdbMatchId}]${ext}`,
     );
   }
   const match = await tmdb.getMovieDetails(tmdbMatchId);
@@ -44,6 +47,6 @@ export const buildFileImportPath = async (file: ImportFile): Promise<string | un
   return join(
     env.getLibraryTVShowsPath(),
     `${match.title} (${releaseDate.getFullYear()})`,
-    `${match.title} (${releaseDate.getFullYear()}) [tmdb=${tmdbMatchId}].${ext}`,
+    `${match.title} (${releaseDate.getFullYear()}) [tmdb=${tmdbMatchId}]${file.part ? `-part-${file.part}` : ''}${ext}`,
   );
 };

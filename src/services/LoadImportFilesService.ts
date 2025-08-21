@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type ImportFile, PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '../../generated/prisma';
 import { Environment } from '../Environment';
 import { buildFileImportPath } from './ImportFileToLibraryService';
 import { TMDBMatchService } from './TMDBMatchService';
@@ -9,60 +9,70 @@ const env = new Environment();
 const prisma = new PrismaClient();
 const tmdbMatchService = new TMDBMatchService();
 
-// TODO: make this upsert instead of clear and remove files that no longer exist
-export class LoadImportFilesService {
-  async loadFromImportsPath() {
-    await prisma.importFile.deleteMany();
+export const loadFromImportsPath = async () => {
+  const importsPath = env.getImportsPath();
+  const paths = await fs.readdir(importsPath, { recursive: true });
+  await addNewFiles(importsPath, paths);
+  await removeMissingFiles(paths);
+};
 
-    const importsPath = env.getImportsPath();
-    const paths = await fs.readdir(importsPath, { recursive: true });
+const removeMissingFiles = async (paths: string[]) => {
+  const allImportFiles = await prisma.importFile.findMany();
 
-    for (const filePath of paths) {
-      const fileName = path.basename(filePath, path.extname(filePath));
-      if (fileName.startsWith('.')) continue;
-      const fullPath = path.join(importsPath, filePath);
-      console.log('Checking file', fileName);
+  for (const importFile of allImportFiles) {
+    if (!paths.includes(importFile.path))
+      await prisma.importFile.delete({ where: { id: importFile.id } });
+  }
+};
 
-      try {
-        if ((await fs.stat(fullPath)).isDirectory()) continue;
-        const importFile = await prisma.importFile.create({
-          data: {
-            path: fullPath,
-          },
-        });
-        const id = importFile.id;
+const addNewFiles = async (importsPath: string, paths: string[]) => {
+  for (const filePath of paths) {
+    const fileName = path.basename(filePath, path.extname(filePath));
+    if (fileName.startsWith('.')) continue;
+    const fullPath = path.join(importsPath, filePath);
+    console.log('Checking file', fileName);
 
-        if (this.looksLikeTVShow(importFile)) {
-          await prisma.importFile.update({
-            where: { id },
-            data: { isTVShow: true },
-          });
-          importFile.isTVShow = true;
-        }
-
-        const matches = await tmdbMatchService.getMatchesForFile(importFile);
-        await prisma.importFile.update({
-          where: { id },
-          data: { tmdbMatchId: matches.at(0)?.id ?? null },
-        });
-        importFile.tmdbMatchId = matches.at(0)?.id ?? null;
-
-        const importPath = await buildFileImportPath(importFile);
-        if (importsPath) {
-          await prisma.importFile.update({
-            where: { id },
-            data: { importPath },
-          });
-        }
-      } catch (error) {
-        console.log('Error accessing file', fullPath, error);
+    try {
+      if ((await fs.stat(fullPath)).isDirectory()) continue;
+      if (await prisma.importFile.findUnique({ where: { path: fullPath } })) {
+        console.log('Skipping since already exists', filePath);
+        continue;
       }
+
+      await createImportFileFromPath(fullPath);
+    } catch (error) {
+      console.log('Error accessing file', fullPath, error);
     }
   }
+};
 
-  private looksLikeTVShow(file: ImportFile) {
-    // Does the path have E123 or S123
-    // then we guess it might be a tv show
-    return /[SE]\d+/.test(file.path);
+const createImportFileFromPath = async (path: string) => {
+  const importFile = await prisma.importFile.create({
+    data: {
+      path,
+      isTVShow: looksLikeTVShow(path),
+    },
+  });
+  const id = importFile.id;
+
+  const matches = await tmdbMatchService.getMatchesForFile(importFile);
+  await prisma.importFile.update({
+    where: { id },
+    data: { tmdbMatchId: matches.at(0)?.id ?? null },
+  });
+  importFile.tmdbMatchId = matches.at(0)?.id ?? null;
+
+  const importPath = await buildFileImportPath(importFile);
+  if (importPath) {
+    await prisma.importFile.update({
+      where: { id },
+      data: { importPath },
+    });
   }
-}
+};
+
+const looksLikeTVShow = (path: string) => {
+  // Does the path have E123 or S123
+  // then we guess it might be a tv show
+  return /[SE]\d+/.test(path);
+};

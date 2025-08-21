@@ -16,6 +16,7 @@ model ImportFile {
   season Int?
   episode Int?
   year Int?
+  part Int?
   importPath String?
   updatedAt DateTime @updatedAt @default(now())
   createdAt DateTime @default(now())
