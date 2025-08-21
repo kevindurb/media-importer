@@ -8,6 +8,7 @@ const env = new Environment();
 const prisma = new PrismaClient();
 const tmdbMatchService = new TMDBMatchService();
 
+// TODO: make this upsert instead of clear and remove files that no longer exist
 export class LoadImportFilesService {
   async loadFromImportsPath() {
     await prisma.importFile.deleteMany();
