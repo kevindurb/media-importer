@@ -1,13 +1,41 @@
+import type { Component } from '@kitajs/html';
 import { PrismaClient } from '../../generated/prisma';
 import { Layout } from '../layouts/Layout';
 import { mimeTypeForFile } from '../utils/files';
 
 const prisma = new PrismaClient();
 
-export const IndexPage = async () => {
-  const importFiles = await prisma.importFile.findMany();
+type Props = {
+  query?: string;
+};
+
+export const IndexPage: Component<Props> = async ({ query }) => {
+  const importFiles = await (query
+    ? prisma.importFile.findMany({
+        where: {
+          path: {
+            contains: query,
+          },
+        },
+        orderBy: {
+          path: 'asc',
+        },
+      })
+    : prisma.importFile.findMany({
+        orderBy: {
+          path: 'asc',
+        },
+      }));
+
   return (
     <Layout>
+      <h1>Media Importer</h1>
+      <form method='GET' action='/'>
+        <div class='input-group mb-3'>
+          <input required type='text' class='form-control' placeholder='Search' name='query' />
+          <button class='btn btn-primary bi bi-search' type='submit'></button>
+        </div>
+      </form>
       <form method='POST' action='/refresh'>
         <button type='submit' class='btn btn-secondary bi bi-arrow-clockwise' />
       </form>
@@ -23,7 +51,11 @@ export const IndexPage = async () => {
         <tbody>
           {importFiles.map((file) => (
             <tr>
-              <td safe>{file.path}</td>
+              <td>
+                <a href={`/import-files/${file.id}/match`} safe>
+                  {file.path}
+                </a>
+              </td>
               <td>
                 <span class='badge text-bg-secondary rounded-pill'>
                   {file.isTVShow ? 'TV Show' : 'Movie'}

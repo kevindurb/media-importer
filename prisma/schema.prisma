@@ -13,6 +13,9 @@ model ImportFile {
   path String @unique
   tmdbMatchId Int?
   isTVShow Boolean @default(false)
-  updatedAt DateTime @updatedAt
+  season Int?
+  episode Int?
+  year Int?
+  updatedAt DateTime @updatedAt @default(now())
   createdAt DateTime @default(now())
 }

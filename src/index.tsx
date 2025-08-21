@@ -22,7 +22,12 @@ bun.serve({
   routes: {
     ...assets,
     '/health': new Response('OK'),
-    '/': () => new Response(renderToStream(<IndexPage />)),
+    '/': (req) =>
+      new Response(
+        renderToStream(
+          <IndexPage query={new URL(req.url).searchParams.get('query') ?? undefined} />,
+        ),
+      ),
     '/refresh': {
       POST: async () => {
         await loadImportFilesService.loadFromImportsPath();

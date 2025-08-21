@@ -26,7 +26,6 @@ export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
 
   const tmdbConfig = await tmdb.getConfiguration();
   const matches = await tmdbMatchService.getMatchesForFile(importFile, tmdbQuery);
-  console.log(tmdbConfig);
 
   return (
     <Layout>
