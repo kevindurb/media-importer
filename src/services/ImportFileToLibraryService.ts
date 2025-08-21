@@ -1,13 +1,26 @@
-import { extname, join } from 'node:path';
+import * as fs from 'node:fs/promises';
+import { dirname, extname, join } from 'node:path';
+import { mkdirp } from 'mkdirp';
 import type { ImportFile } from '../../generated/prisma';
+import { PrismaClient } from '../../generated/prisma';
 import { Environment } from '../Environment';
 import { TMDB } from '../TMDB';
 
 const tmdb = new TMDB();
 const env = new Environment();
+const prisma = new PrismaClient();
 
 export const importFile = async (file: ImportFile) => {
-  // TODO: import
+  if (!file.tmdbMatchId) throw new Error('Must have match');
+  if (!file.importPath) throw new Error('Must have import path');
+
+  console.log('Creating intermediate directories');
+  await mkdirp(dirname(file.importPath));
+  console.log('Moving file');
+  await fs.rename(file.path, file.importPath);
+  console.log('Done moving file');
+
+  await prisma.importFile.delete({ where: { id: file.id } });
 };
 
 export const buildFileImportPath = async (file: ImportFile): Promise<string | undefined> => {
