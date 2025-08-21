@@ -26,13 +26,60 @@ export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
 
   const tmdbConfig = await tmdb.getConfiguration();
   const matches = await tmdbMatchService.getMatchesForFile(importFile, tmdbQuery);
+  const currentMatch = await (importFile.tmdbMatchId &&
+    (importFile.isTVShow
+      ? tmdb.getTVDetails(importFile.tmdbMatchId)
+      : tmdb.getMovieDetails(importFile.tmdbMatchId)));
 
   return (
     <Layout>
+      <a href='/'>Back</a>
       <h1 safe>{fromImportPath(importFile)}</h1>
-      <form method='GET' action={`/import-files/${importFile.id}/match`}>
+      {currentMatch ? (
+        <div class='card'>
+          <div class='ratio' style='--bs-aspect-ratio: 150%;'>
+            <img
+              src={`${tmdbConfig.images.secure_base_url}/w500${currentMatch.poster_path}`}
+              class='card-img-top'
+              alt={'title' in currentMatch ? currentMatch.title : currentMatch.name}
+            />
+          </div>
+          <div class='card-img-overlay'>
+            <input
+              class='form-check-input'
+              type='radio'
+              name='tmdbMatchId'
+              value={currentMatch.id.toString()}
+              checked={currentMatch.id === importFile.tmdbMatchId}
+            />
+          </div>
+          <div class='card-body'>
+            <h5
+              class='card-title overflow-hidden'
+              style={ellipsisOverflowStyle}
+              safe
+            >{`${currentMatch.id}: ${'title' in currentMatch ? currentMatch.title : currentMatch.name}`}</h5>
+            <h6 class='card-subtitle mb-2 text-body-secondary' safe>
+              {currentMatch.release_date}
+            </h6>
+            <p class='card-text overflow-hidden' style={ellipsisOverflowStyle} safe>
+              {currentMatch.overview}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <h3>No current match</h3>
+      )}
+      <form method='GET' action={`/import-files/${importFile.id}`}>
         <div class='input-group mb-3'>
-          <input required type='text' class='form-control' placeholder='Search' name='tmdbQuery' />
+          <input
+            required
+            type='text'
+            class='form-control'
+            placeholder='Search'
+            name='tmdbQuery'
+            value={tmdbQuery}
+          />
           <button class='btn btn-primary bi bi-search' type='submit'></button>
         </div>
       </form>

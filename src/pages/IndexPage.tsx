@@ -55,6 +55,9 @@ export const IndexPage: Component<Props> = async ({ query }) => {
                 <a href={`/import-files/${file.id}`} safe>
                   {fromImportPath(file)}
                 </a>
+                <div class='fst-italic' safe>
+                  {file.importPath ?? 'No import path'}
+                </div>
               </td>
               <td>
                 <span class='badge text-bg-secondary rounded-pill'>

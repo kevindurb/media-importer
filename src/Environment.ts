@@ -3,6 +3,14 @@ export class Environment {
     return this.getStringOrFail('IMPORTS_PATH');
   }
 
+  getLibraryMoviesPath(): string {
+    return this.getStringOrFail('LIBRARY_MOVIES_PATH');
+  }
+
+  getLibraryTVShowsPath(): string {
+    return this.getStringOrFail('LIBRARY_TV_SHOWS_PATH');
+  }
+
   getPort(): number {
     return this.getNumberOrFail('PORT');
   }

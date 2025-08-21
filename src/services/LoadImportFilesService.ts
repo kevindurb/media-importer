@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { type ImportFile, PrismaClient } from '../../generated/prisma';
 import { Environment } from '../Environment';
+import { buildFileImportPath } from './ImportFileToLibraryService';
 import { TMDBMatchService } from './TMDBMatchService';
 
 const env = new Environment();
@@ -44,6 +45,15 @@ export class LoadImportFilesService {
           where: { id },
           data: { tmdbMatchId: matches.at(0)?.id ?? null },
         });
+        importFile.tmdbMatchId = matches.at(0)?.id ?? null;
+
+        const importPath = await buildFileImportPath(importFile);
+        if (importsPath) {
+          await prisma.importFile.update({
+            where: { id },
+            data: { importPath },
+          });
+        }
       } catch (error) {
         console.log('Error accessing file', fullPath, error);
       }

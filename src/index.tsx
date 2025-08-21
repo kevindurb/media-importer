@@ -7,13 +7,12 @@ import { assets } from './assets';
 import { Environment } from './Environment';
 import { IndexPage } from './pages/IndexPage';
 import { MatchPage } from './pages/MatchPage';
-import { ImportFileToLibraryService } from './services/ImportFileToLibraryService';
+import { buildFileImportPath, importFile } from './services/ImportFileToLibraryService';
 import { LoadImportFilesService } from './services/LoadImportFilesService';
 
 const prisma = new PrismaClient();
 const env = new Environment();
 const loadImportFilesService = new LoadImportFilesService();
-const importFileToLibraryService = new ImportFileToLibraryService();
 
 const optionalParseString = z
   .string()
@@ -25,7 +24,7 @@ const UpdateImportFileBody = z.object({
   isTVShow: z
     .string()
     .optional()
-    .default('1')
+    .default('0')
     .transform((value) => value === '1'),
   season: optionalParseString,
   episode: optionalParseString,
@@ -61,10 +60,20 @@ bun.serve({
       POST: async (req) => {
         const id = Number.parseInt(req.params.id);
         const data = UpdateImportFileBody.parse(qs.parse(await req.text()));
-        await prisma.importFile.update({
+        const importFile = await prisma.importFile.findUnique({
           where: { id },
-          data,
         });
+        if (importFile) {
+          const updated = await prisma.importFile.update({
+            where: { id },
+            data,
+          });
+          const importPath = await buildFileImportPath(updated);
+          await prisma.importFile.update({
+            where: { id },
+            data: { importPath },
+          });
+        }
         return Response.redirect(`/import-files/${id}`);
       },
     },
@@ -73,7 +82,7 @@ bun.serve({
         const id = Number.parseInt(req.params.id);
         const file = await prisma.importFile.findUnique({ where: { id } });
         if (file) {
-          await importFileToLibraryService.importFile(file);
+          await importFile(file);
         }
         return Response.redirect('/');
       },

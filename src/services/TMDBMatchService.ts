@@ -10,13 +10,13 @@ export class TMDBMatchService {
     if (queryOverride) {
       return (
         importFile.isTVShow ? tmdb.searchTV(queryOverride) : tmdb.searchMovie(queryOverride)
-      ).then((res) => res.results);
+      ).then((res) => res?.results ?? []);
     }
     return (
       await Promise.all(
         this.getMatchQueries(importFile).map((query) =>
           (importFile.isTVShow ? tmdb.searchTV(query) : tmdb.searchMovie(query)).then(
-            (res) => res.results,
+            (res) => res?.results ?? [],
           ),
         ),
       )
