@@ -20,7 +20,9 @@ export const ImportFilePage: Component<Props> = async ({ id, tmdbQuery }) => {
   if (!importFile) throw new Error('Not Found');
 
   const tmdbConfig = await tmdb.getConfiguration();
-  const matches = await tmdbMatchService.getMatchesForFile(importFile, tmdbQuery);
+  const matches = tmdbQuery
+    ? await tmdbMatchService.getMatchesForQuery(tmdbQuery, importFile.isTVShow)
+    : await tmdbMatchService.getMatchesForFile(importFile);
   const currentMatch = await (importFile.tmdbMatchId &&
     (importFile.isTVShow
       ? tmdb.getTVDetails(importFile.tmdbMatchId)

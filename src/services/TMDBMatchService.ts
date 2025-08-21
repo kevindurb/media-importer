@@ -6,12 +6,13 @@ const searchIgnoreRegex = /[DSET]\d+/g;
 const tmdb = new TMDB();
 
 export class TMDBMatchService {
-  async getMatchesForFile(importFile: ImportFile, queryOverride?: string) {
-    if (queryOverride) {
-      return (
-        importFile.isTVShow ? tmdb.searchTV(queryOverride) : tmdb.searchMovie(queryOverride)
-      ).then((res) => res?.results ?? []);
-    }
+  async getMatchesForQuery(query: string, isTVShow: boolean) {
+    return (isTVShow ? tmdb.searchTV(query) : tmdb.searchMovie(query)).then(
+      (res) => res?.results ?? [],
+    );
+  }
+
+  async getMatchesForFile(importFile: ImportFile) {
     return (
       await Promise.all(
         this.getMatchQueries(importFile).map((query) =>

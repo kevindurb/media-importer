@@ -7,6 +7,7 @@ import { assets } from './assets';
 import { Environment } from './Environment';
 import { ImportFilePage } from './pages/ImportFilePage';
 import { IndexPage } from './pages/IndexPage';
+import { MassEditPage } from './pages/MassEditPage';
 import { buildFileImportPath, importFile } from './services/ImportFileToLibraryService';
 import { loadFromImportsPath } from './services/LoadImportFilesService';
 
@@ -30,6 +31,16 @@ const UpdateImportFileBody = z.object({
   part: optionalParseString,
 });
 
+const MassEditImportFileBody = z.object({
+  fileIds: z.array(z.string()).transform((fileIds) => fileIds.map((id) => Number.parseInt(id))),
+  tmdbMatchId: optionalParseString,
+  isTVShow: z
+    .string()
+    .optional()
+    .default('0')
+    .transform((value) => value === '1'),
+});
+
 bun.serve({
   port: env.getPort(),
   routes: {
@@ -44,6 +55,37 @@ bun.serve({
     '/refresh': {
       POST: async () => {
         await loadFromImportsPath();
+        return Response.redirect('/');
+      },
+    },
+    '/import-files/mass-edit': {
+      GET: (req) =>
+        new Response(
+          renderToStream(
+            <MassEditPage
+              tmdbQuery={new URL(req.url).searchParams.get('tmdbQuery') ?? undefined}
+              fileIds={new URL(req.url).searchParams
+                .getAll('fileIds')
+                .map((id) => Number.parseInt(id))}
+            />,
+          ),
+        ),
+      POST: async (req) => {
+        const { fileIds, ...data } = MassEditImportFileBody.parse(qs.parse(await req.text()));
+        await prisma.importFile.updateMany({
+          where: { id: { in: fileIds } },
+          data,
+        });
+        const files = await prisma.importFile.findMany({
+          where: { id: { in: fileIds } },
+        });
+        for (const file of files) {
+          const importPath = await buildFileImportPath(file);
+          await prisma.importFile.update({
+            where: { id: file.id },
+            data: { importPath },
+          });
+        }
         return Response.redirect('/');
       },
     },

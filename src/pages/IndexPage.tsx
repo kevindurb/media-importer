@@ -41,52 +41,58 @@ export const IndexPage: Component<Props> = async ({ query }) => {
           Refresh
         </button>
       </form>
-      <table class='table'>
-        <thead>
-          <tr>
-            <th scope='col'>Path</th>
-            <th scope='col'>Type</th>
-            <th scope='col'>Match</th>
-            <th scope='col'></th>
-          </tr>
-        </thead>
-        <tbody>
-          {importFiles.map((file) => (
+      <form method='GET' action='/import-files/mass-edit'>
+        <button type='submit' class='btn btn-secondary'>
+          Mass Edit
+        </button>
+        <table class='table'>
+          <thead>
             <tr>
-              <td>
-                <a href={`/import-files/${file.id}`} safe>
-                  {fromImportPath(file)}
-                </a>
-                <div class='fst-italic' safe>
-                  {file.importPath ?? 'No import path'}
-                </div>
-              </td>
-              <td>
-                <span class='badge text-bg-secondary rounded-pill'>
-                  {file.isTVShow ? 'TV Show' : 'Movie'}
-                </span>
-                <span class='badge text-bg-secondary rounded-pill' safe>
-                  {mimeTypeForFile(file)}
-                </span>
-              </td>
-              <td>
-                <span
-                  class={`badge text-bg-${file.tmdbMatchId ? 'success' : 'warning'} rounded-pill`}
-                >
-                  {file.tmdbMatchId ?? 'No Match Found'}
-                </span>
-              </td>
-              <td>
-                <form method='post' action={`/import-files/${file.id}/import`}>
-                  <button type='submit' class='btn btn-secondary'>
-                    Import
-                  </button>
-                </form>
-              </td>
+              <th scope='col'></th>
+              <th scope='col'>Path</th>
+              <th scope='col'>Type</th>
+              <th scope='col'>Match</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {importFiles.map((file) => (
+              <tr>
+                <td>
+                  <input
+                    class='form-check-input'
+                    type='checkbox'
+                    name='fileIds'
+                    value={file.id.toString()}
+                  />
+                </td>
+                <td>
+                  <a href={`/import-files/${file.id}`} safe>
+                    {fromImportPath(file)}
+                  </a>
+                  <div class='fst-italic' safe>
+                    {file.importPath ?? 'No import path'}
+                  </div>
+                </td>
+                <td>
+                  <span class='badge text-bg-secondary rounded-pill'>
+                    {file.isTVShow ? 'TV Show' : 'Movie'}
+                  </span>
+                  <span class='badge text-bg-secondary rounded-pill' safe>
+                    {mimeTypeForFile(file)}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    class={`badge text-bg-${file.tmdbMatchId ? 'success' : 'warning'} rounded-pill`}
+                  >
+                    {file.tmdbMatchId ?? 'No Match Found'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </form>
     </Layout>
   );
 };
