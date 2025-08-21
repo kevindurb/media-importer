@@ -37,7 +37,9 @@ export const IndexPage: Component<Props> = async ({ query }) => {
         </div>
       </form>
       <form method='POST' action='/refresh'>
-        <button type='submit' class='btn btn-secondary bi bi-arrow-clockwise' />
+        <button type='submit' class='btn btn-secondary'>
+          Refresh
+        </button>
       </form>
       <table class='table'>
         <thead>

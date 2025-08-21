@@ -15,7 +15,7 @@ const tmdb = new TMDB();
 const prisma = new PrismaClient();
 const tmdbMatchService = new TMDBMatchService();
 
-export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
+export const ImportFilePage: Component<Props> = async ({ id, tmdbQuery }) => {
   const importFile = await prisma.importFile.findUnique({ where: { id } });
   if (!importFile) throw new Error('Not Found');
 
@@ -35,7 +35,14 @@ export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
   return (
     <Layout>
       <a href='/'>Back</a>
-      <h1 safe>{fromImportPath(importFile)}</h1>
+      <div class='d-flex justify-content-between'>
+        <h1 safe>{fromImportPath(importFile)}</h1>
+        <form method='POST' action={`/import-files/${importFile.id}/import`}>
+          <button class='btn btn-primary' type='submit'>
+            Import
+          </button>
+        </form>
+      </div>
       <div class='row'>
         <div class='col'>
           {currentMatch ? (
@@ -58,6 +65,21 @@ export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
           <h5 safe>{importFile.importPath}</h5>
         </div>
       </div>
+
+      <h2>Match Search</h2>
+      <form method='GET' action={`/import-files/${importFile.id}`}>
+        <div class='input-group mb-3'>
+          <input
+            required
+            type='text'
+            class='form-control'
+            placeholder='Search'
+            name='tmdbQuery'
+            value={tmdbQuery}
+          />
+          <button class='btn btn-primary bi bi-search' type='submit'></button>
+        </div>
+      </form>
       <form method='POST' action={`/import-files/${importFile.id}`}>
         <div class='d-flex align-items-center gap-3'>
           <button type='submit' class='btn btn-primary'>
@@ -110,21 +132,6 @@ export const MatchPage: Component<Props> = async ({ id, tmdbQuery }) => {
             </div>
           )}
         </div>
-
-        <h2>Match Search</h2>
-        <form method='GET' action={`/import-files/${importFile.id}`}>
-          <div class='input-group mb-3'>
-            <input
-              required
-              type='text'
-              class='form-control'
-              placeholder='Search'
-              name='tmdbQuery'
-              value={tmdbQuery}
-            />
-            <button class='btn btn-primary bi bi-search' type='submit'></button>
-          </div>
-        </form>
 
         <div class='row'>
           {matches.map((match) => (

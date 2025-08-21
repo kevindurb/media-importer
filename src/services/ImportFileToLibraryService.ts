@@ -20,7 +20,6 @@ export const buildFileImportPath = async (file: ImportFile): Promise<string | un
     const match = await tmdb.getTVDetails(tmdbMatchId);
     if (!match) return;
     const releaseDate = new Date(match.first_air_date);
-    console.log(match);
     const season = file.season?.toString().padStart(2, '0') ?? '00';
     const episode = file.episode?.toString().padStart(2, '0') ?? '00';
     let episodeName = 'Unnamed';

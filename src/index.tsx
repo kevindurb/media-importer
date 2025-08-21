@@ -5,8 +5,8 @@ import z from 'zod';
 import { PrismaClient } from '../generated/prisma';
 import { assets } from './assets';
 import { Environment } from './Environment';
+import { ImportFilePage } from './pages/ImportFilePage';
 import { IndexPage } from './pages/IndexPage';
-import { MatchPage } from './pages/MatchPage';
 import { buildFileImportPath, importFile } from './services/ImportFileToLibraryService';
 import { loadFromImportsPath } from './services/LoadImportFilesService';
 
@@ -51,7 +51,7 @@ bun.serve({
       GET: (req) =>
         new Response(
           renderToStream(
-            <MatchPage
+            <ImportFilePage
               id={Number.parseInt(req.params.id)}
               tmdbQuery={new URL(req.url).searchParams.get('tmdbQuery') ?? undefined}
             />,

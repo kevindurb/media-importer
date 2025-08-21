@@ -12,16 +12,19 @@ const tmdbMatchService = new TMDBMatchService();
 export const loadFromImportsPath = async () => {
   const importsPath = env.getImportsPath();
   const paths = await fs.readdir(importsPath, { recursive: true });
+  const fullPaths = paths.map((filePath) => path.join(importsPath, filePath));
   await addNewFiles(importsPath, paths);
-  await removeMissingFiles(paths);
+  await removeMissingFiles(fullPaths);
 };
 
 const removeMissingFiles = async (paths: string[]) => {
   const allImportFiles = await prisma.importFile.findMany();
 
   for (const importFile of allImportFiles) {
-    if (!paths.includes(importFile.path))
+    if (!paths.includes(importFile.path)) {
+      console.log('Deleting missing file', importFile.path);
       await prisma.importFile.delete({ where: { id: importFile.id } });
+    }
   }
 };
 
