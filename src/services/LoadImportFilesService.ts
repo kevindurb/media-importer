@@ -3,11 +3,10 @@ import path from 'node:path';
 import { PrismaClient } from '../../generated/prisma';
 import { Environment } from '../Environment';
 import { buildFileImportPath } from './ImportFileToLibraryService';
-import { TMDBMatchService } from './TMDBMatchService';
+import { getMatchesForFile } from './TMDBMatchService';
 
 const env = new Environment();
 const prisma = new PrismaClient();
-const tmdbMatchService = new TMDBMatchService();
 
 export const loadFromImportsPath = async () => {
   const importsPath = env.getImportsPath();
@@ -58,7 +57,7 @@ const createImportFileFromPath = async (path: string) => {
   });
   const id = importFile.id;
 
-  const matches = await tmdbMatchService.getMatchesForFile(importFile);
+  const matches = await getMatchesForFile(importFile);
   await prisma.importFile.update({
     where: { id },
     data: { tmdbMatchId: matches.at(0)?.id ?? null },

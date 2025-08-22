@@ -2,7 +2,7 @@ import type { Component } from '@kitajs/html';
 import { PrismaClient } from '../../generated/prisma';
 import { TMDBCard } from '../components/TMDBCard';
 import { Layout } from '../layouts/Layout';
-import { TMDBMatchService } from '../services/TMDBMatchService';
+import { getMatchesForQuery } from '../services/TMDBMatchService';
 import { TMDB } from '../TMDB';
 import { fromImportPath } from '../utils/files';
 
@@ -13,16 +13,13 @@ type Props = {
 
 const tmdb = new TMDB();
 const prisma = new PrismaClient();
-const tmdbMatchService = new TMDBMatchService();
 
 export const MassEditPage: Component<Props> = async ({ fileIds, tmdbQuery }) => {
   const tmdbConfig = await tmdb.getConfiguration();
   const files = await prisma.importFile.findMany({ where: { id: { in: fileIds } } });
   const [firstFile] = files;
   if (!firstFile) throw new Error('missing files');
-  const matches = tmdbQuery
-    ? await tmdbMatchService.getMatchesForQuery(tmdbQuery, firstFile.isTVShow)
-    : [];
+  const matches = tmdbQuery ? await getMatchesForQuery(tmdbQuery, firstFile.isTVShow) : [];
 
   return (
     <Layout>

@@ -5,33 +5,30 @@ import { fileName, parentDirectory } from '../utils/files';
 const searchIgnoreRegex = /[DSET]\d+/g;
 const tmdb = new TMDB();
 
-export class TMDBMatchService {
-  async getMatchesForQuery(query: string, isTVShow: boolean) {
-    return (isTVShow ? tmdb.searchTV(query) : tmdb.searchMovie(query)).then(
-      (res) => res?.results ?? [],
-    );
-  }
+export const getMatchesForQuery = async (query: string, isTVShow: boolean) => {
+  const res = await (isTVShow ? tmdb.searchTV(query) : tmdb.searchMovie(query));
+  return res?.results ?? [];
+};
 
-  async getMatchesForFile(importFile: ImportFile) {
-    return (
-      await Promise.all(
-        this.getMatchQueries(importFile).map((query) =>
-          (importFile.isTVShow ? tmdb.searchTV(query) : tmdb.searchMovie(query)).then(
-            (res) => res?.results ?? [],
-          ),
+export const getMatchesForFile = async (importFile: ImportFile) => {
+  return (
+    await Promise.all(
+      getMatchQueries(importFile).map((query) =>
+        (importFile.isTVShow ? tmdb.searchTV(query) : tmdb.searchMovie(query)).then(
+          (res) => res?.results ?? [],
         ),
-      )
-    ).flat();
-  }
+      ),
+    )
+  ).flat();
+};
 
-  private getMatchQueries(file: ImportFile): string[] {
-    const cleanFileName = this.cleanForQuery(fileName(file));
-    const cleanParent = this.cleanForQuery(parentDirectory(file));
+const getMatchQueries = (file: ImportFile): string[] => {
+  const cleanFileName = cleanForQuery(fileName(file));
+  const cleanParent = cleanForQuery(parentDirectory(file));
 
-    return [cleanFileName, cleanParent];
-  }
+  return [cleanFileName, cleanParent];
+};
 
-  private cleanForQuery(value: string): string {
-    return value.replaceAll(/\W|_/g, ' ').replaceAll(searchIgnoreRegex, '');
-  }
-}
+const cleanForQuery = (value: string): string => {
+  return value.replaceAll(/\W|_/g, ' ').replaceAll(searchIgnoreRegex, '');
+};
