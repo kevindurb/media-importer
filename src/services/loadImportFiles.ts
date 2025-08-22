@@ -49,10 +49,13 @@ const addNewFiles = async (importsPath: string, paths: string[]) => {
 };
 
 const createImportFileFromPath = async (path: string) => {
+  const isTVShow = looksLikeTVShow(path);
   const importFile = await prisma.importFile.create({
     data: {
       path,
-      isTVShow: looksLikeTVShow(path),
+      isTVShow,
+      season: isTVShow ? extractSeason(path) : null,
+      episode: isTVShow ? extractEpisode(path) : null,
     },
   });
   const id = importFile.id;
@@ -77,4 +80,22 @@ const looksLikeTVShow = (path: string) => {
   // Does the path have E123 or S123
   // then we guess it might be a tv show
   return /[SE]\d+/.test(path);
+};
+
+const extractSeason = (path: string) => {
+  const result = path.match(/S(\d+)/);
+  if (!result) return;
+  const [, seasonNumber] = result;
+  if (seasonNumber) {
+    return Number.parseInt(seasonNumber);
+  }
+};
+
+const extractEpisode = (path: string) => {
+  const result = path.match(/E(\d+)/);
+  if (!result) return;
+  const [, episodeNumber] = result;
+  if (episodeNumber) {
+    return Number.parseInt(episodeNumber);
+  }
 };
