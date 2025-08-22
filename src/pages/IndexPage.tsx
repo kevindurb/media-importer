@@ -42,9 +42,17 @@ export const IndexPage: Component<Props> = async ({ query }) => {
         </button>
       </form>
       <form method='GET' action='/import-files/mass-edit'>
-        <button type='submit' class='btn btn-secondary'>
-          Mass Edit
-        </button>
+        <div class='d-flex align-items-center gap-3'>
+          <button type='submit' class='btn btn-secondary'>
+            Mass Edit
+          </button>
+          <div class='form-check'>
+            <input class='form-check-input' type='checkbox' value='' id='select-all' />
+            <label class='form-check-label' for='select-all'>
+              Select All
+            </label>
+          </div>
+        </div>
         <table class='table'>
           <thead>
             <tr>

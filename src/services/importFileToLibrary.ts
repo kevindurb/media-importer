@@ -47,7 +47,7 @@ export const buildFileImportPath = async (file: ImportFile): Promise<string | un
     }
     return join(
       env.getLibraryTVShowsPath(),
-      `${match.name} (${releaseDate.getFullYear()})`,
+      `${match.name} (${releaseDate.getFullYear()}) [tmdb=${tmdbMatchId}]`,
       `Season ${season}`,
       `${match.name} (${releaseDate.getFullYear()}) S${season}E${episode} ${episodeName} [tmdb=${tmdbMatchId}]${ext}`,
     );
@@ -57,8 +57,8 @@ export const buildFileImportPath = async (file: ImportFile): Promise<string | un
   const releaseDate = new Date(match.release_date);
 
   return join(
-    env.getLibraryTVShowsPath(),
-    `${match.title} (${releaseDate.getFullYear()})`,
+    env.getLibraryMoviesPath(),
+    `${match.title} (${releaseDate.getFullYear()}) [tmdb=${tmdbMatchId}]`,
     `${match.title} (${releaseDate.getFullYear()}) [tmdb=${tmdbMatchId}]${file.part ? `-part-${file.part}` : ''}${ext}`,
   );
 };

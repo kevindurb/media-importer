@@ -16,38 +16,55 @@ const prisma = new PrismaClient();
 
 export const MassEditPage: Component<Props> = async ({ fileIds, tmdbQuery }) => {
   const tmdbConfig = await tmdb.getConfiguration();
-  const files = await prisma.importFile.findMany({ where: { id: { in: fileIds } } });
+  const files = await prisma.importFile.findMany({
+    where: { id: { in: fileIds } },
+    orderBy: {
+      path: 'asc',
+    },
+  });
   const [firstFile] = files;
   if (!firstFile) throw new Error('missing files');
   const matches = tmdbQuery ? await getMatchesForQuery(tmdbQuery, firstFile.isTVShow) : [];
 
   return (
     <Layout>
-      <h1>Mass Edit</h1>
-      <table class='table'>
-        <thead>
-          <tr>
-            <th scope='col'>Path</th>
-            <th scope='col'>Match</th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map((file) => (
+      <h1 safe>{`Mass Edit (${files.length})`}</h1>
+      <details>
+        <summary>Show Files</summary>
+        <table class='table'>
+          <thead>
             <tr>
-              <td>
-                <span safe>{fromImportPath(file)}</span>
-              </td>
-              <td>
-                <span
-                  class={`badge text-bg-${file.tmdbMatchId ? 'success' : 'warning'} rounded-pill`}
-                >
-                  {file.tmdbMatchId ?? 'No Match Found'}
-                </span>
-              </td>
+              <th scope='col'>Path</th>
+              <th scope='col'>Match</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {files.map((file) => (
+              <tr>
+                <td>
+                  <div safe>{fromImportPath(file)}</div>
+                  {file.tmdbMatchId ? <div></div> : null}
+                </td>
+                <td>
+                  <span
+                    class={`badge text-bg-${file.tmdbMatchId ? 'success' : 'warning'} rounded-pill`}
+                  >
+                    {file.tmdbMatchId ?? 'No Match Found'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+      <form method='POST' action={`/import-files/mass-import`}>
+        {files.map((file) => (
+          <input type='hidden' name='fileIds' value={file.id.toString()} />
+        ))}
+        <button class='btn btn-primary' type='submit'>
+          Import All
+        </button>
+      </form>
       <h2>Match Search</h2>
       <form method='GET' action={`/import-files/mass-edit`}>
         {files.map((file) => (

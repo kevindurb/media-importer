@@ -41,6 +41,10 @@ const MassEditImportFileBody = z.object({
     .transform((value) => value === '1'),
 });
 
+const MassImportFileBody = z.object({
+  fileIds: z.array(z.string()).transform((fileIds) => fileIds.map((id) => Number.parseInt(id))),
+});
+
 bun.serve({
   port: env.getPort(),
   routes: {
@@ -55,6 +59,16 @@ bun.serve({
     '/refresh': {
       POST: async () => {
         await loadFromImportsPath();
+        return Response.redirect('/');
+      },
+    },
+    '/import-files/mass-import': {
+      POST: async (req) => {
+        const { fileIds } = MassImportFileBody.parse(qs.parse(await req.text()));
+        const files = await prisma.importFile.findMany({ where: { id: { in: fileIds } } });
+        for (const file of files) {
+          await importFile(file);
+        }
         return Response.redirect('/');
       },
     },
