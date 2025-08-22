@@ -2,7 +2,7 @@ import type { Component } from '@kitajs/html';
 import { PrismaClient } from '../../generated/prisma';
 import { TMDBCard } from '../components/TMDBCard';
 import { Layout } from '../layouts/Layout';
-import { getMatchesForQuery } from '../services/TMDBMatchService';
+import { getMatchesForQuery } from '../services/matchFiles';
 import { TMDB } from '../TMDB';
 import { fromImportPath } from '../utils/files';
 

@@ -8,8 +8,8 @@ import { Environment } from './Environment';
 import { ImportFilePage } from './pages/ImportFilePage';
 import { IndexPage } from './pages/IndexPage';
 import { MassEditPage } from './pages/MassEditPage';
-import { buildFileImportPath, importFile } from './services/ImportFileToLibraryService';
-import { loadFromImportsPath } from './services/LoadImportFilesService';
+import { buildFileImportPath, importFile } from './services/importFileToLibrary';
+import { loadFromImportsPath } from './services/loadImportFiles';
 
 const prisma = new PrismaClient();
 const env = new Environment();

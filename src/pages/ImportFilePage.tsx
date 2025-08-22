@@ -2,7 +2,7 @@ import type { Component } from '@kitajs/html';
 import { PrismaClient } from '../../generated/prisma';
 import { TMDBCard } from '../components/TMDBCard';
 import { Layout } from '../layouts/Layout';
-import { TMDBMatchService } from '../services/TMDBMatchService';
+import { getMatchesForFile, getMatchesForQuery } from '../services/matchFiles';
 import { TMDB } from '../TMDB';
 import { fromImportPath } from '../utils/files';
 
@@ -13,7 +13,6 @@ type Props = {
 
 const tmdb = new TMDB();
 const prisma = new PrismaClient();
-const tmdbMatchService = new TMDBMatchService();
 
 export const ImportFilePage: Component<Props> = async ({ id, tmdbQuery }) => {
   const importFile = await prisma.importFile.findUnique({ where: { id } });
@@ -21,8 +20,8 @@ export const ImportFilePage: Component<Props> = async ({ id, tmdbQuery }) => {
 
   const tmdbConfig = await tmdb.getConfiguration();
   const matches = tmdbQuery
-    ? await tmdbMatchService.getMatchesForQuery(tmdbQuery, importFile.isTVShow)
-    : await tmdbMatchService.getMatchesForFile(importFile);
+    ? await getMatchesForQuery(tmdbQuery, importFile.isTVShow)
+    : await getMatchesForFile(importFile);
   const currentMatch = await (importFile.tmdbMatchId &&
     (importFile.isTVShow
       ? tmdb.getTVDetails(importFile.tmdbMatchId)

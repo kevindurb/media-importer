@@ -2,8 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PrismaClient } from '../../generated/prisma';
 import { Environment } from '../Environment';
-import { buildFileImportPath } from './ImportFileToLibraryService';
-import { getMatchesForFile } from './TMDBMatchService';
+import { buildFileImportPath } from './importFileToLibrary';
+import { getMatchesForFile } from './matchFiles';
 
 const env = new Environment();
 const prisma = new PrismaClient();
