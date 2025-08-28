@@ -8,11 +8,35 @@ import { getMatchesForFile } from './matchFiles';
 const env = new Environment();
 const prisma = new PrismaClient();
 
+const readDirRecursive = async (root: string) => {
+  const paths: string[] = [];
+
+  try {
+    for (const name of await fs.readdir(root)) {
+      const fullPath = path.join(root, name);
+      console.log('checking', fullPath);
+      try {
+        const stat = await fs.stat(fullPath);
+        if (stat.isFile()) {
+          paths.push(fullPath);
+        } else if (stat.isDirectory()) {
+          paths.push(...(await readDirRecursive(fullPath)));
+        }
+      } catch (err) {
+        console.warn('Error checking path', fullPath, err);
+      }
+    }
+  } catch (err) {
+    console.warn('Error listing path', root, err);
+  }
+
+  return paths;
+};
+
 export const loadFromImportsPath = async () => {
   const importsPath = env.getImportsPath();
-  const paths = await fs.readdir(importsPath, { recursive: true });
-  const fullPaths = paths.map((filePath) => path.join(importsPath, filePath));
-  await addNewFiles(importsPath, paths);
+  const fullPaths = await readDirRecursive(importsPath);
+  await addNewFiles(importsPath, fullPaths);
   await removeMissingFiles(fullPaths);
 };
 
@@ -31,19 +55,18 @@ const addNewFiles = async (importsPath: string, paths: string[]) => {
   for (const filePath of paths) {
     const fileName = path.basename(filePath, path.extname(filePath));
     if (fileName.startsWith('.')) continue;
-    const fullPath = path.join(importsPath, filePath);
     console.log('Checking file', fileName);
 
     try {
-      if ((await fs.stat(fullPath)).isDirectory()) continue;
-      if (await prisma.importFile.findUnique({ where: { path: fullPath } })) {
+      if ((await fs.stat(filePath)).isDirectory()) continue;
+      if (await prisma.importFile.findUnique({ where: { path: filePath } })) {
         console.log('Skipping since already exists', filePath);
         continue;
       }
 
-      await createImportFileFromPath(fullPath);
+      await createImportFileFromPath(filePath);
     } catch (error) {
-      console.log('Error accessing file', fullPath, error);
+      console.log('Error accessing file', filePath, error);
     }
   }
 };

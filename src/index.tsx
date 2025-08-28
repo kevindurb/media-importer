@@ -39,6 +39,15 @@ const MassEditImportFileBody = z.object({
     .optional()
     .default('0')
     .transform((value) => value === '1'),
+  files: z
+    .record(
+      z.string(),
+      z.object({
+        episode: z.string().transform((value) => (value ? Number.parseInt(value) : undefined)),
+        season: z.string().transform((value) => (value ? Number.parseInt(value) : undefined)),
+      }),
+    )
+    .optional(),
 });
 
 const MassImportFileBody = z.object({
@@ -65,7 +74,9 @@ bun.serve({
     '/import-files/mass-import': {
       POST: async (req) => {
         const { fileIds } = MassImportFileBody.parse(qs.parse(await req.text()));
-        const files = await prisma.importFile.findMany({ where: { id: { in: fileIds } } });
+        const files = await prisma.importFile.findMany({
+          where: { id: { in: fileIds } },
+        });
         for (const file of files) {
           await importFile(file);
         }
@@ -85,11 +96,27 @@ bun.serve({
           ),
         ),
       POST: async (req) => {
-        const { fileIds, ...data } = MassEditImportFileBody.parse(qs.parse(await req.text()));
-        await prisma.importFile.updateMany({
-          where: { id: { in: fileIds } },
-          data,
-        });
+        const {
+          fileIds,
+          files: filesData,
+          ...data
+        } = MassEditImportFileBody.parse(qs.parse(await req.text()));
+        if (filesData) {
+          for (const [id, { episode, season }] of Object.entries(filesData)) {
+            await prisma.importFile.update({
+              where: { id: Number.parseInt(id) },
+              data: {
+                episode,
+                season,
+              },
+            });
+          }
+        } else {
+          await prisma.importFile.updateMany({
+            where: { id: { in: fileIds } },
+            data,
+          });
+        }
         const files = await prisma.importFile.findMany({
           where: { id: { in: fileIds } },
         });

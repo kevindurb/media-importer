@@ -29,33 +29,68 @@ export const MassEditPage: Component<Props> = async ({ fileIds, tmdbQuery }) => 
   return (
     <Layout>
       <h1 safe>{`Mass Edit (${files.length})`}</h1>
-      <details>
+      <details open>
         <summary>Show Files</summary>
-        <table class='table'>
-          <thead>
-            <tr>
-              <th scope='col'>Path</th>
-              <th scope='col'>Match</th>
-            </tr>
-          </thead>
-          <tbody>
-            {files.map((file) => (
+        <form method='POST' action='/import-files/mass-edit'>
+          {files.map((file) => (
+            <input type='hidden' name='fileIds' value={file.id.toString()} />
+          ))}
+          <table class='table'>
+            <thead>
               <tr>
-                <td>
-                  <div safe>{fromImportPath(file)}</div>
-                  {file.tmdbMatchId ? <div></div> : null}
-                </td>
-                <td>
-                  <span
-                    class={`badge text-bg-${file.tmdbMatchId ? 'success' : 'warning'} rounded-pill`}
-                  >
-                    {file.tmdbMatchId ?? 'No Match Found'}
-                  </span>
-                </td>
+                <th scope='col'>Path</th>
+                {firstFile.isTVShow ? (
+                  <>
+                    <th scope='col'>Season/Episode</th>
+                  </>
+                ) : null}
+                <th scope='col'>Match</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {files.map((file) => (
+                <tr>
+                  <td>
+                    <div safe>{fromImportPath(file)}</div>
+                    {file.tmdbMatchId ? <div></div> : null}
+                  </td>
+                  {firstFile.isTVShow ? (
+                    <td>
+                      <div class='input-group'>
+                        <span class='input-group-text'>S</span>
+                        <input
+                          type='text'
+                          class='form-control'
+                          placeholder='Season'
+                          name={`files[${file.id}][season]`}
+                          value={`${file.season ?? ''}`}
+                        />
+                        <span class='input-group-text'>E</span>
+                        <input
+                          type='text'
+                          class='form-control'
+                          placeholder='Episode'
+                          name={`files[${file.id}][episode]`}
+                          value={`${file.episode ?? ''}`}
+                        />
+                      </div>
+                    </td>
+                  ) : null}
+                  <td>
+                    <span
+                      class={`badge text-bg-${file.tmdbMatchId ? 'success' : 'warning'} rounded-pill`}
+                    >
+                      {file.tmdbMatchId ?? 'No Match Found'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button type='submit' class='btn btn-primary'>
+            Save
+          </button>
+        </form>
       </details>
       <form method='POST' action={`/import-files/mass-import`}>
         {files.map((file) => (
